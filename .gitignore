@@ -1,0 +1,19 @@
+# Environment
+.env
+.env.*
+
+# Build output
+/bin/
+/build/
+/dist/
+
+# Coverage
+coverage.out
+
+# Temporary
+tmp/
+
+# Logs
+*.log
+
+*.md
