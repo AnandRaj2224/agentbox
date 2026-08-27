@@ -38,12 +38,13 @@ func (d *DockerOrchestrator) PullImage(ctx context.Context, imageName string) er
 
 // CreateContainer starts the creation of the docker container based on imageName and it returns a Unique ID to keep
 // track of it.
-func (d *DockerOrchestrator) CreateContainer(ctx context.Context, imageName string, cmd []string) (string, error) {
+func (d *DockerOrchestrator) CreateContainer(ctx context.Context, imageName string, cmd []string, cfg *container.HostConfig) (string, error) {
 	resp, err := d.cli.ContainerCreate(ctx, client.ContainerCreateOptions{
 		Image: imageName,
 		Config: &container.Config{
 			Cmd: cmd,
 		},
+		HostConfig: cfg,
 	})
 	if err != nil {
 		return "", err
