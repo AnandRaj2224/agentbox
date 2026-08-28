@@ -1,17 +1,19 @@
 syntax = "proto3";
 
+package agentbox;
+
 option go_package = "github.com/AnandRaj2224/agentbox/internal/api";
 
 message ExecuteRequest {
-    string sourceCode = 1;
-    string runtime = 2;
+  string source_code = 1;
+  string runtime = 2;
 }
 
 message ExecuteResponse {
-    string output = 1;
-    int32 exitCode = 2;
+  string output = 1;
+  int32 exit_code = 2;
 }
 
 service ExecutionService {
-    rpc Execute (ExecuteRequest) returns (ExecuteResponse);
+  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
 }
