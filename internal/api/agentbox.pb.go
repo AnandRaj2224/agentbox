@@ -23,7 +23,7 @@ const (
 
 type ExecuteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SourceCode    string                 `protobuf:"bytes,1,opt,name=sourceCode,proto3" json:"sourceCode,omitempty"`
+	SourceCode    string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
 	Runtime       string                 `protobuf:"bytes,2,opt,name=runtime,proto3" json:"runtime,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -76,7 +76,7 @@ func (x *ExecuteRequest) GetRuntime() string {
 type ExecuteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
-	ExitCode      int32                  `protobuf:"varint,2,opt,name=exitCode,proto3" json:"exitCode,omitempty"`
+	ExitCode      int32                  `protobuf:"varint,2,opt,name=exit_code,json=exitCode,proto3" json:"exit_code,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,17 +129,16 @@ var File_proto_agentbox_proto protoreflect.FileDescriptor
 
 const file_proto_agentbox_proto_rawDesc = "" +
 	"\n" +
-	"\x14proto/agentbox.proto\"J\n" +
-	"\x0eExecuteRequest\x12\x1e\n" +
-	"\n" +
-	"sourceCode\x18\x01 \x01(\tR\n" +
+	"\x14proto/agentbox.proto\x12\bagentbox\"K\n" +
+	"\x0eExecuteRequest\x12\x1f\n" +
+	"\vsource_code\x18\x01 \x01(\tR\n" +
 	"sourceCode\x12\x18\n" +
-	"\aruntime\x18\x02 \x01(\tR\aruntime\"E\n" +
+	"\aruntime\x18\x02 \x01(\tR\aruntime\"F\n" +
 	"\x0fExecuteResponse\x12\x16\n" +
-	"\x06output\x18\x01 \x01(\tR\x06output\x12\x1a\n" +
-	"\bexitCode\x18\x02 \x01(\x05R\bexitCode2@\n" +
-	"\x10ExecutionService\x12,\n" +
-	"\aExecute\x12\x0f.ExecuteRequest\x1a\x10.ExecuteResponseB/Z-github.com/AnandRaj2224/agentbox/internal/apib\x06proto3"
+	"\x06output\x18\x01 \x01(\tR\x06output\x12\x1b\n" +
+	"\texit_code\x18\x02 \x01(\x05R\bexitCode2R\n" +
+	"\x10ExecutionService\x12>\n" +
+	"\aExecute\x12\x18.agentbox.ExecuteRequest\x1a\x19.agentbox.ExecuteResponseB/Z-github.com/AnandRaj2224/agentbox/internal/apib\x06proto3"
 
 var (
 	file_proto_agentbox_proto_rawDescOnce sync.Once
@@ -155,12 +154,12 @@ func file_proto_agentbox_proto_rawDescGZIP() []byte {
 
 var file_proto_agentbox_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_agentbox_proto_goTypes = []any{
-	(*ExecuteRequest)(nil),  // 0: ExecuteRequest
-	(*ExecuteResponse)(nil), // 1: ExecuteResponse
+	(*ExecuteRequest)(nil),  // 0: agentbox.ExecuteRequest
+	(*ExecuteResponse)(nil), // 1: agentbox.ExecuteResponse
 }
 var file_proto_agentbox_proto_depIdxs = []int32{
-	0, // 0: ExecutionService.Execute:input_type -> ExecuteRequest
-	1, // 1: ExecutionService.Execute:output_type -> ExecuteResponse
+	0, // 0: agentbox.ExecutionService.Execute:input_type -> agentbox.ExecuteRequest
+	1, // 1: agentbox.ExecutionService.Execute:output_type -> agentbox.ExecuteResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

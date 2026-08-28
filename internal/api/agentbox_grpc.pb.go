@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExecutionService_Execute_FullMethodName = "/ExecutionService/Execute"
+	ExecutionService_Execute_FullMethodName = "/agentbox.ExecutionService/Execute"
 )
 
 // ExecutionServiceClient is the client API for ExecutionService service.
@@ -108,7 +108,7 @@ func _ExecutionService_Execute_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExecutionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ExecutionService",
+	ServiceName: "agentbox.ExecutionService",
 	HandlerType: (*ExecutionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
