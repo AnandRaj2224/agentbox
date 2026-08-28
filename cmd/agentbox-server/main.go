@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/AnandRaj2224/agentbox/internal/api"
 	"github.com/AnandRaj2224/agentbox/internal/config"
 	"github.com/AnandRaj2224/agentbox/internal/logger"
-	"github.com/AnandRaj2224/agentbox/internal/orchestrator"
-	"github.com/AnandRaj2224/agentbox/internal/sandbox"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -29,59 +30,17 @@ func main() {
 	)
 	defer stop()
 
-	cfg := sandbox.SandboxConfig{MemoryMB: 50, CPULimit: 0.5}
-	hostCfg := sandbox.NewHostConfig(cfg)
-
-	cli, err := orchestrator.New(log)
+	listener, err := net.Listen("tcp", ":"+config.Port)
 	if err != nil {
-		log.Error("error creating docker client", "Error", err)
+		log.Error("error listen on port", config.Port, err)
 		return
 	}
 
-	err = cli.PullImage(ctx, "alpine:latest")
-	if err != nil {
-		log.Error("error pulling the image", "Error", err)
-		return
-
-	}
-	log.Info("image pulled", "image", "alpine:latest")
-
-	ID, err := cli.CreateContainer(ctx, "alpine:latest", []string{"sleep", "10"}, hostCfg)
-	if err != nil {
-		log.Error("error creating container", "Error", err)
-		return
-
-	}
-	log.Info("container created", "id", ID)
-	defer cli.RemoveContainer(context.Background(), ID)
-
-	err = cli.StartContainer(ctx, ID)
-	if err != nil {
-		log.Error("error starting container", "Error", err)
-		return
-
-	}
-	log.Info("container started", "id", ID)
-
-	res, err := cli.InspectContainer(ctx, ID)
-	if err != nil {
-		log.Error("error inspecting container", "Error", err)
-		return
-	}
-	log.Info("inspection", "state", res)
-
-	err = cli.StopContainer(ctx, ID)
-	if err != nil {
-		return
-	}
-
-	err = cli.WaitContainer(ctx, ID)
-	if err != nil {
-		log.Error("error waiting for container", "Error", err)
-		return
-
-	}
+	grpcServer := grpc.NewServer()
+	api.RegisterExecutionServiceServer(grpcServer, api.NewServer(log))
+	go grpcServer.Serve(listener)
 
 	<-ctx.Done()
+	grpcServer.GracefulStop()
 	log.Info("Server shutting down")
 }
