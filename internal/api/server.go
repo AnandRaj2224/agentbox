@@ -1,8 +1,10 @@
 package api
 
 import (
-	"context"
 	"log/slog"
+	"time"
+
+	grpc "google.golang.org/grpc"
 )
 
 type ExecutionServer struct {
@@ -10,14 +12,13 @@ type ExecutionServer struct {
 	logger *slog.Logger
 }
 
-func (s *ExecutionServer) Execute(ctx context.Context, req *ExecuteRequest) (*ExecuteResponse, error) {
-	s.logger.Info("dummy log", "sourceCode", req.SourceCode, "runtime", req.Runtime)
-	return &ExecuteResponse{
-		Output:   "received!",
-		ExitCode: 0,
-	}, nil
+func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreamingServer[ExecuteResponse]) error {
+	for range 3 {
+		stream.Send(&ExecuteResponse{Output: "streaming chunk\n"})
+		time.Sleep(1 * time.Second)
+	}
+	return nil
 }
-
 func NewServer(log *slog.Logger) *ExecutionServer {
 	return &ExecutionServer{
 		logger: log,
