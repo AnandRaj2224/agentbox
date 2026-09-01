@@ -15,5 +15,5 @@ message ExecuteResponse {
 }
 
 service ExecutionService {
-  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+  rpc Execute(ExecuteRequest) returns (stream ExecuteResponse);
 }
