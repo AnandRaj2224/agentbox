@@ -10,10 +10,32 @@ import (
 	"github.com/moby/moby/client"
 )
 
+// hijackedIO wraps Docker's HijackedResponse into a standard io.ReadCloser.
+type hijackedIO struct {
+	io.Reader
+	io.Closer
+}
+
 // DockerOrchestrator is a wrapper for Docker SDK client and logger.
 type DockerOrchestrator struct {
 	cli    *client.Client
 	logger *slog.Logger
+}
+
+// AttachContainer opens a raw TCP socket between server and the Docker Daemon
+// it is pulling the logs out of Docker and bringing them into the backend.
+func (d *DockerOrchestrator) AttachContainer(ctx context.Context, containerID string) (io.ReadCloser, error) {
+	resp, err := d.cli.ContainerAttach(ctx, containerID, client.ContainerAttachOptions{
+		Stream: true, Stdout: true, Stderr: true, Logs: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return hijackedIO{
+		Reader: resp.Reader,
+		Closer: resp.Conn,
+	}, nil
 }
 
 // PullImage downloads the container image from docker hub
