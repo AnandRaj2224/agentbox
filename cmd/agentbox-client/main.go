@@ -8,6 +8,7 @@ import (
 
 	"github.com/AnandRaj2224/agentbox/internal/api"
 	"github.com/AnandRaj2224/agentbox/internal/client"
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"google.golang.org/grpc"
 )
@@ -23,10 +24,11 @@ type model struct {
 	output     string
 	grpcClient api.ExecutionServiceClient
 	stream     grpc.ServerStreamingClient[api.ExecuteResponse]
+	codebox    textarea.Model
 }
 
 func (m model) Init() tea.Cmd {
-	return startExecution(m.grpcClient)
+	return textarea.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -35,7 +37,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "ctrl+r":
+			m.output = ""
+			return m, startExecution(m.grpcClient, m.codebox.Value())
+		default:
+			var cmd tea.Cmd
+			m.codebox, cmd = m.codebox.Update(msg)
+			return m, cmd
 		}
+
 	case streamStartMsg:
 		m.stream = msg.stream
 		return m, readNextChunk(m.stream)
@@ -48,21 +58,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case errMsg:
 		m.output += fmt.Sprintf("\n[Error: %v]", msg.err)
 		return m, nil
+	default:
+		var cmd tea.Cmd
+		m.codebox, cmd = m.codebox.Update(msg)
+		return m, cmd
+
 	}
 
 	return m, nil
 }
 
 func (m model) View() string {
-	return fmt.Sprintf("AgentBox Terminal\n\n%s\n\nPress 'q' to quit\n", m.output)
+	return fmt.Sprintf(
+		"AgentBox Terminal\n\n%s\n\nOutput:\n%s\n\nPress 'ctrl+r' to run, 'q' to quit\n",
+		m.codebox.View(),
+		m.output,
+	)
 }
 
-func startExecution(c api.ExecutionServiceClient) tea.Cmd {
+func startExecution(c api.ExecutionServiceClient, code string) tea.Cmd {
 	return func() tea.Msg {
 		ctx := context.Background()
 		req := &api.ExecuteRequest{
 			Runtime:    "python",
-			SourceCode: "print(\"hello from TUI\")",
+			SourceCode: code,
 		}
 
 		stream, err := c.Execute(ctx, req)
@@ -95,8 +114,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	ta := textarea.New()
+	ta.Placeholder = "Write code here..."
+	ta.Focus()
+
 	m := model{
 		grpcClient: c,
+		codebox:    ta,
 	}
 
 	p := tea.NewProgram(m)
