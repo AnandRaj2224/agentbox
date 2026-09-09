@@ -25,6 +25,7 @@ type model struct {
 	grpcClient api.ExecutionServiceClient
 	stream     grpc.ServerStreamingClient[api.ExecuteResponse]
 	codebox    textarea.Model
+	runtime    string
 }
 
 func (m model) Init() tea.Cmd {
@@ -39,7 +40,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+r":
 			m.output = ""
-			return m, startExecution(m.grpcClient, m.codebox.Value())
+			return m, startExecution(m.grpcClient, m.codebox.Value(), m.runtime)
+		case "ctrl+l":
+			if m.runtime == "python" {
+				m.runtime = "go"
+			} else {
+				m.runtime = "python"
+			}
+			return m, nil
 		default:
 			var cmd tea.Cmd
 			m.codebox, cmd = m.codebox.Update(msg)
@@ -68,17 +76,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"AgentBox Terminal\n\n%s\n\nOutput:\n%s\n\nPress 'ctrl+r' to run, 'q' to quit\n",
+		"AgentBox Terminal\n\n%s\n\nOutput:\nRuntime: [%s]\n\n%s\n\nPress 'ctrl+r' to run, 'ctrl+l' to switch runtime 'q' to quit\n",
 		m.codebox.View(),
+		m.runtime,
 		m.output,
 	)
 }
 
-func startExecution(c api.ExecutionServiceClient, code string) tea.Cmd {
+func startExecution(c api.ExecutionServiceClient, code string, runtime string) tea.Cmd {
 	return func() tea.Msg {
 		ctx := context.Background()
 		req := &api.ExecuteRequest{
-			Runtime:    "python",
+			Runtime:    runtime,
 			SourceCode: code,
 		}
 
@@ -119,6 +128,7 @@ func main() {
 	m := model{
 		grpcClient: c,
 		codebox:    ta,
+		runtime:    "python",
 	}
 
 	p := tea.NewProgram(m)
