@@ -64,8 +64,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	}
-
-	return m, nil
 }
 
 func (m model) View() string {
