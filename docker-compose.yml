@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: agentbox
+      POSTGRES_PASSWORD: acer
+      POSTGRES_DB: agentbox_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./internal/storage/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  pgdata:
