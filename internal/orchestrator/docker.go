@@ -22,6 +22,19 @@ type DockerOrchestrator struct {
 	logger *slog.Logger
 }
 
+// CopyToContainer copies the contents of contentReader into a container
+// at the specified destination path.
+func (d *DockerOrchestrator) CopyToContainer(ctx context.Context, containerID string, destinationPath string, contentReader io.Reader) error {
+	_, err := d.cli.CopyToContainer(ctx, containerID, client.CopyToContainerOptions{
+		DestinationPath: destinationPath,
+		Content:         contentReader,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // AttachContainer opens a raw TCP socket between server and the Docker Daemon
 // it is pulling the logs out of Docker and bringing them into the backend.
 func (d *DockerOrchestrator) AttachContainer(ctx context.Context, containerID string) (io.ReadCloser, error) {
