@@ -2,6 +2,8 @@ package runtime
 
 import "fmt"
 
+// Runtime defines the behavior required to execute a program
+// using a specific runtime environment.
 type Runtime interface {
 	Image() string
 	Extension() string
