@@ -47,7 +47,7 @@ func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreami
 	if err != nil {
 		return err
 	}
-	containerID, err := s.cli.CreateContainer(ctx, rt.Image(), rt.Command("main.go"), sandbox.NewHostConfig(cfg))
+	containerID, err := s.cli.CreateContainer(ctx, rt.Image(), rt.Command("main"+rt.Extension()), sandbox.NewHostConfig(cfg))
 	if err != nil {
 		return err
 	}
