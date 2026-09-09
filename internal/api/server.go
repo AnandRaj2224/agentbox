@@ -53,6 +53,9 @@ func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreami
 	}
 	defer s.cli.RemoveContainer(context.Background(), containerID)
 
+	tarReader, err := sandbox.CreateTarArchive("main"+rt.Extension(), req.SourceCode)
+	err = s.cli.CopyToContainer(ctx, containerID, "/", tarReader)
+
 	logReader, err := s.cli.AttachContainer(ctx, containerID)
 	if err != nil {
 		return err
