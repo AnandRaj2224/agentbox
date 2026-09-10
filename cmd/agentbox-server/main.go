@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +13,7 @@ import (
 	"github.com/AnandRaj2224/agentbox/internal/logger"
 	"github.com/AnandRaj2224/agentbox/internal/orchestrator"
 	"github.com/AnandRaj2224/agentbox/internal/storage"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
@@ -48,6 +50,15 @@ func main() {
 		log.Error("error creating docker client", "error", err)
 		return
 	}
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+
+		err := http.ListenAndServe(":9000", nil)
+		if err != nil {
+			return
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	api.RegisterExecutionServiceServer(grpcServer, api.NewServer(log, cli, db))
