@@ -119,12 +119,12 @@ func (d *DockerOrchestrator) RemoveContainer(ctx context.Context, containerID st
 }
 
 // InspectContainer queries the Docker API for the container's metadata.
-func (d *DockerOrchestrator) InspectContainer(ctx context.Context, containerID string) (container.ContainerState, error) {
+func (d *DockerOrchestrator) InspectContainer(ctx context.Context, containerID string) (*container.State, error) {
 	result, err := d.cli.ContainerInspect(ctx, containerID, client.ContainerInspectOptions{})
 	if err != nil {
-		return result.Container.State.Status, err
+		return nil, err
 	}
-	return result.Container.State.Status, nil
+	return result.Container.State, nil
 }
 
 // StopContainer sends a SIGTERM signal to the container, asking it to shut down gracefully.
