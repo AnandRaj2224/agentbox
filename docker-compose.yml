@@ -11,5 +11,20 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./internal/storage/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+
+
 volumes:
   pgdata:
