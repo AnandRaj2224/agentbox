@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/AnandRaj2224/agentbox/internal/metrics"
 	"github.com/AnandRaj2224/agentbox/internal/orchestrator"
 	"github.com/AnandRaj2224/agentbox/internal/runtime"
 	"github.com/AnandRaj2224/agentbox/internal/sandbox"
@@ -102,6 +103,14 @@ func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreami
 		Code:      req.SourceCode,
 		Output:    outputBuf.String(),
 	}
+
+	status := "error"
+	if record.ExitCode == 0 {
+		status = "success"
+	}
+	metrics.RecordExecution(req.Runtime, status)
+	metrics.RecordDuration(req.Runtime, duration.Seconds())
+
 	s.repo.SaveExecution(ctx, record)
 	return nil
 }
