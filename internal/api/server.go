@@ -1,12 +1,17 @@
 package api
 
 import (
+	"bytes"
 	context "context"
+	"io"
 	"log/slog"
+	"time"
 
 	"github.com/AnandRaj2224/agentbox/internal/orchestrator"
 	"github.com/AnandRaj2224/agentbox/internal/runtime"
 	"github.com/AnandRaj2224/agentbox/internal/sandbox"
+	"github.com/AnandRaj2224/agentbox/internal/storage"
+	"github.com/google/uuid"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	grpc "google.golang.org/grpc"
 )
@@ -29,6 +34,7 @@ type ExecutionServer struct {
 	UnimplementedExecutionServiceServer
 	logger *slog.Logger
 	cli    *orchestrator.DockerOrchestrator
+	repo   storage.Repository
 }
 
 // Execute is a Request Handler that reads users's request.
@@ -36,6 +42,9 @@ type ExecutionServer struct {
 // It tells stdcopy to pump the logs into the network stream.
 // When the container dies, this method finishes, the network stream closes, and the container is deleted.
 func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreamingServer[ExecuteResponse]) error {
+
+	startTime := time.Now()
+
 	ctx := stream.Context()
 	cfg := sandbox.SandboxConfig{MemoryMB: 50, CPULimit: 0.5}
 	rt, err := runtime.GetRuntime(req.Runtime)
@@ -67,20 +76,41 @@ func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreami
 		return err
 	}
 
+	var outputBuf bytes.Buffer
+
 	writer := &grpcWriter{stream: stream}
-	stdcopy.StdCopy(writer, writer, logReader)
+	multiWriter := io.MultiWriter(writer, &outputBuf)
+	stdcopy.StdCopy(multiWriter, multiWriter, logReader)
 
 	err = s.cli.WaitContainer(ctx, containerID)
 	if err != nil {
 		return err
 	}
+	duration := time.Since(startTime)
+	stateObj, err := s.cli.InspectContainer(ctx, containerID)
+	if err != nil {
+		return err
+	}
+
+	id := uuid.New()
+	record := storage.ExecutionRecord{
+		ID:        id,
+		Runtime:   req.Runtime,
+		Timestamp: startTime,
+		ExitCode:  stateObj.ExitCode,
+		Duration:  duration,
+		Code:      req.SourceCode,
+		Output:    outputBuf.String(),
+	}
+	s.repo.SaveExecution(ctx, record)
 	return nil
 }
 
 // NewServer is a Constructor for *ExecutionServer.
-func NewServer(log *slog.Logger, cli *orchestrator.DockerOrchestrator) *ExecutionServer {
+func NewServer(log *slog.Logger, cli *orchestrator.DockerOrchestrator, repo storage.Repository) *ExecutionServer {
 	return &ExecutionServer{
 		logger: log,
 		cli:    cli,
+		repo:   repo,
 	}
 }
