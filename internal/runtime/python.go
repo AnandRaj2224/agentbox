@@ -13,5 +13,5 @@ func (p *PythonRuntime) Extension() string {
 	return p.extension
 }
 func (p *PythonRuntime) Command(filename string) []string {
-	return []string{"python", "/", filename}
+	return []string{"python", "/" + filename}
 }
