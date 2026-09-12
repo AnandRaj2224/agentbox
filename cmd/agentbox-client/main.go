@@ -27,6 +27,8 @@ type model struct {
 	stream     grpc.ServerStreamingClient[api.ExecuteResponse]
 	codebox    textarea.Model
 	runtime    string
+	width      int
+	height     int
 }
 
 func (m model) Init() tea.Cmd {
@@ -35,6 +37,13 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.codebox.SetWidth((msg.Width / 2) - 4)
+		m.codebox.SetHeight(msg.Height - 6)
+		return m, nil
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
@@ -76,17 +85,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 var (
-	codePanelStyle = lipgloss.NewStyle().
+	basePanelStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("62")).
-			Padding(0, 1).
-			Width(50)
+			Padding(0, 1)
 
-	outputPanelStyle = lipgloss.NewStyle().
-				BorderStyle(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("39")).
-				Padding(0, 1).
-				Width(50)
+	codePanelStyle   = basePanelStyle.BorderForeground(lipgloss.Color("62"))
+	outputPanelStyle = basePanelStyle.BorderForeground(lipgloss.Color("39"))
 
 	statusStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("42")).
@@ -94,19 +98,33 @@ var (
 )
 
 func (m model) View() string {
-	styledCode := codePanelStyle.Render("Code:\n\n" + m.codebox.View())
+	panelWidth := (m.width / 2) - 2
+	panelHeight := m.height - 5
 
-	// 2. Render the right panel (Execution Output)
-	styledOutput := outputPanelStyle.Render("Stream:\n\n" + m.output)
+	// Prevent negative dimensions if the terminal is shrunk too small
+	if panelWidth < 0 {
+		panelWidth = 0
+	}
+	if panelHeight < 0 {
+		panelHeight = 0
+	}
 
-	// 3. Join them side-by-side
+	// 2. Apply the dynamic dimensions to the styles
+	dynamicCodePanel := codePanelStyle.Width(panelWidth).Height(panelHeight)
+	dynamicOutputPanel := outputPanelStyle.Width(panelWidth).Height(panelHeight)
+
+	// 3. Render the panels
+	styledCode := dynamicCodePanel.Render("Code:\n\n" + m.codebox.View())
+	styledOutput := dynamicOutputPanel.Render("Stream:\n\n" + m.output)
+
+	// 4. Join them side-by-side
 	topPanels := lipgloss.JoinHorizontal(lipgloss.Top, styledCode, styledOutput)
 
-	// 4. Create a dynamic status bar at the bottom
+	// 5. Create the status bar
 	statusText := fmt.Sprintf(" Runtime: %s | [Ctrl+R] Run | [Ctrl+L] Swap Runtime | [Ctrl+C] Quit ", m.runtime)
 	styledStatus := statusStyle.Render(statusText)
 
-	// 5. Stack the panels on top of the status bar
+	// 6. Stack the layout
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		topPanels,
