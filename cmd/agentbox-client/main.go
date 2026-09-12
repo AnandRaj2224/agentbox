@@ -58,6 +58,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.runtime = "python"
 			}
 			return m, nil
+		case "ctrl+k":
+			m.codebox.Reset()
+			m.output = ""
+			return m, nil
 		default:
 			var cmd tea.Cmd
 			m.codebox, cmd = m.codebox.Update(msg)
@@ -121,7 +125,7 @@ func (m model) View() string {
 	topPanels := lipgloss.JoinHorizontal(lipgloss.Top, styledCode, styledOutput)
 
 	// 5. Create the status bar
-	statusText := fmt.Sprintf(" Runtime: %s | [Ctrl+R] Run | [Ctrl+L] Swap Runtime | [Ctrl+C] Quit ", m.runtime)
+	statusText := fmt.Sprintf(" Runtime: %s | [Ctrl+R] Run | [Ctrl+L] Swap Runtime | [Ctrl+K] Clear Code | [Ctrl+C] Quit ", m.runtime)
 	styledStatus := statusStyle.Render(statusText)
 
 	// 6. Stack the layout
