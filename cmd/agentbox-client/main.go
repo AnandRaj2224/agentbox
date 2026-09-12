@@ -10,6 +10,7 @@ import (
 	"github.com/AnandRaj2224/agentbox/internal/client"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"google.golang.org/grpc"
 )
 
@@ -74,12 +75,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
+var (
+	codePanelStyle = lipgloss.NewStyle().
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("62")).
+			Padding(0, 1).
+			Width(50)
+
+	outputPanelStyle = lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("39")).
+				Padding(0, 1).
+				Width(50)
+
+	statusStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("42")).
+			Bold(true)
+)
+
 func (m model) View() string {
-	return fmt.Sprintf(
-		"AgentBox Terminal\n\n%s\n\nOutput:\nRuntime: [%s]\n\n%s\n\nPress 'ctrl+r' to run, 'ctrl+l' to switch runtime 'q' to quit\n",
-		m.codebox.View(),
-		m.runtime,
-		m.output,
+	styledCode := codePanelStyle.Render("Code:\n\n" + m.codebox.View())
+
+	// 2. Render the right panel (Execution Output)
+	styledOutput := outputPanelStyle.Render("Stream:\n\n" + m.output)
+
+	// 3. Join them side-by-side
+	topPanels := lipgloss.JoinHorizontal(lipgloss.Top, styledCode, styledOutput)
+
+	// 4. Create a dynamic status bar at the bottom
+	statusText := fmt.Sprintf(" Runtime: %s | [Ctrl+R] Run | [Ctrl+L] Swap Runtime | [Ctrl+C] Quit ", m.runtime)
+	styledStatus := statusStyle.Render(statusText)
+
+	// 5. Stack the panels on top of the status bar
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		topPanels,
+		styledStatus,
 	)
 }
 
