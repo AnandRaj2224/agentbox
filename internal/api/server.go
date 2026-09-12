@@ -47,7 +47,7 @@ func (s *ExecutionServer) Execute(req *ExecuteRequest, stream grpc.ServerStreami
 	startTime := time.Now()
 
 	ctx := stream.Context()
-	cfg := sandbox.SandboxConfig{MemoryMB: 50, CPULimit: 0.5}
+	cfg := sandbox.SandboxConfig{MemoryMB: 200, CPULimit: 1}
 	rt, err := runtime.GetRuntime(req.Runtime)
 	if err != nil {
 		return err
