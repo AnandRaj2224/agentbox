@@ -13,5 +13,5 @@ func (g *GoRuntime) Extension() string {
 	return g.extension
 }
 func (g *GoRuntime) Command(filename string) []string {
-	return []string{"go", "run", filename}
+	return []string{"go", "run", "/", filename}
 }
