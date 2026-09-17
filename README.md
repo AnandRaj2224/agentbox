@@ -24,10 +24,10 @@ The platform is built around **gRPC server-side streaming** and the **Docker Eng
 
 AgentBox provides an asynchronous, non-blocking terminal user interface (TUI) for executing code, alongside a decoupled observability stack for platform monitoring.
 
-| Terminal Client (Bubble Tea) | Operational Telemetry (Grafana) |
-|:---:|:---:|
-| ![TUI](docs/tui.png) | ![Grafana](docs/grafana.png) |
-| *Real-time workload execution & streaming* | *Live system health and execution metrics* |
+### Terminal Client (Bubble Tea) : *Real-time workload execution & streaming*
+ ![TUI](docs/tui.png) 
+### Operational Telemetry (Grafana) : *Live system health and execution metrics*
+ ![Grafana](docs/grafana.png) 
 
 ---
 
@@ -40,7 +40,7 @@ AgentBox provides an asynchronous, non-blocking terminal user interface (TUI) fo
 - **Persistent Audit Trail** — Stores execution history, exit codes, and execution durations in PostgreSQL using connection pooling.
 - **Ephemeral Execution** — Creates isolated containers for individual workloads and removes them after execution.
 - **Context-Aware Cleanup** — Propagates request cancellation through the execution stack to prevent orphaned containers.
-- **Automated CI/CD** — GitHub Actions validates formatting, static analysis, tests, and builds on every change.
+- **Automated CI** — GitHub Actions validates formatting, static analysis, tests, and builds on every change.
 
 ---
 
@@ -282,8 +282,8 @@ This allows the server to terminate and remove an execution container when the r
 
 Make sure the following are installed:
 
-- Go 1.25+
-- Docker Engine
+- Go 1.26+
+- Docker
 - Docker Compose
 
 ### 1. Clone the Repository
@@ -299,12 +299,6 @@ Start PostgreSQL, Prometheus, and Grafana:
 
 ```bash
 docker compose up -d
-```
-
-Verify the containers are running:
-
-```bash
-docker compose ps
 ```
 
 ### 3. Start the AgentBox Server
@@ -326,41 +320,6 @@ go run ./cmd/agentbox-client/main.go
 ```
 
 You can now submit workloads through the AgentBox TUI.
-
----
-
-## 🔄 CI/CD
-
-AgentBox uses GitHub Actions to automatically validate changes.
-
-The CI pipeline performs:
-
-```text
-Push / Pull Request
-        │
-        ▼
-  Checkout Repository
-        │
-        ▼
-      Setup Go
-        │
-        ▼
-     go fmt
-        │
-        ▼
-     go vet
-        │
-        ▼
-   go test ./...
-        │
-        ▼
-      go build
-        │
-        ▼
-      ✓ Pass
-```
-
-This ensures that formatting, static analysis, tests, and compilation are validated before changes are merged.
 
 ---
 
@@ -413,9 +372,6 @@ Ephemeral Container
        ├── Memory Limit
        └── Lifecycle Cleanup
 ```
-
-> **Important:** Container isolation should not be treated as a complete security boundary for arbitrary hostile workloads. Production deployments should apply additional hardening such as restricted container capabilities, filesystem restrictions, network isolation, seccomp/AppArmor policies, and appropriate daemon isolation.
-
 ---
 
 ## 👨‍💻 Author
