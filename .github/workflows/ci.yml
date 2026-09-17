@@ -1,6 +1,12 @@
 name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+      - "docs/*"
 
 jobs:
   test:
@@ -8,12 +14,12 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
-          go-version: "1.26.5"
+          go-version-file: go.mod
 
       - name: Check formatting
         run: test -z "$(gofmt -l .)"
